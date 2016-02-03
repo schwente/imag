@@ -26,6 +26,13 @@ without having knowledge about how to parse the content part of an entry.
 
 ### Linking to external content {#sec:thestore:linking:external}
 
+Each Entry can store _one link to external content at most_.
+
+This link is stored in the header field "imag.content.uri"
+(@sec:thestore:fileformat:header:imag).
+A key "imag.content.file" COULD be used for a local mirror of the content which
+is referenced by "imag.content.uri".
+
 #### Weak linking {#sec:thestore:linking:external:weak}
 
 #### Strong linking {#sec:thestore:linking:external:strong}
