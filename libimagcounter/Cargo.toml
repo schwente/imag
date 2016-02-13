@@ -1,0 +1,11 @@
+[package]
+name = "libimagcounter"
+version = "0.1.0"
+authors = ["Matthias Beyer <mail@beyermatthias.de>"]
+
+[dependencies]
+semver = "0.2"
+
+[dependencies.libimagstore]
+path = "../libimagstore"
+
