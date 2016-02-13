@@ -1,3 +1,3 @@
-#[test]
-fn it_works() {
-}
+extern crate libimagrt;
+extern crate libimagstore;
+
