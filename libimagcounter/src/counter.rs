@@ -6,14 +6,16 @@ use libimagstore::storeid::IntoStoreId;
 
 use module_path::ModuleEntryPath;
 
+pub type CounterName = String;
+
 pub struct Counter {
-    name: String,
+    name: CounterName,
     value: u64,
 }
 
 impl Counter {
 
-    pub fn new(name: String, init: u64) -> Counter {
+    pub fn new(name: CounterName, init: u64) -> Counter {
         Counter {
             name: name,
             value: init,
@@ -24,7 +26,7 @@ impl Counter {
         self.value = self.value + 1;
     }
 
-    pub fn name(&self) -> &String {
+    pub fn name(&self) -> &CounterName {
         &self.name
     }
 
