@@ -65,3 +65,26 @@ impl Into<Entry> for Counter {
     }
 }
 
+trait IntoCounterName {
+    fn into_countername(self) -> CounterName;
+}
+
+impl IntoCounterName for StoreId {
+
+    fn into_countername(self) -> CounterName {
+        unimplemented!()
+    }
+
+}
+
+trait FromCounterName<T> {
+    fn from_countername(c: CounterName) -> T
+}
+
+impl FromCounterName<StoreId> for CounterName {
+
+    fn into_countername(self) -> StoreId {
+        unimplemented!()
+    }
+
+}
