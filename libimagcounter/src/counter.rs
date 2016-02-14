@@ -34,9 +34,9 @@ impl Counter {
 
 }
 
-impl From<Entry> for Counter {
+impl<'a> From<&'a Entry> for Counter {
 
-    fn from(e: Entry) -> Counter {
+    fn from(e: &'a Entry) -> Counter {
         let hdr = e.get_header();
 
         let name = String::from("Unimplemented");
