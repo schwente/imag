@@ -4,6 +4,7 @@ extern crate clap;
 
 extern crate libimagcounter;
 extern crate libimagrt;
+extern crate libimagutil;
 
 use std::process::exit;
 
