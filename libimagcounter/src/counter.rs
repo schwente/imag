@@ -78,7 +78,7 @@ impl IntoCounterName for StoreId {
 }
 
 trait FromCounterName<T> {
-    fn from_countername(c: CounterName) -> T
+    fn from_countername(c: CounterName) -> T;
 }
 
 impl FromCounterName<StoreId> for CounterName {
