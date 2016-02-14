@@ -1,6 +1,11 @@
 use std::convert::From;
 use std::convert::Into;
 
+use toml::Value;
+
+use libimagstore::store::Store;
+use libimagstore::storeid::StoreId;
+use libimagstore::error::StoreError;
 use libimagstore::store::Entry;
 use libimagstore::storeid::IntoStoreId;
 
@@ -10,12 +15,12 @@ pub type CounterName = String;
 
 pub struct Counter {
     name: CounterName,
-    value: u64,
+    value: i64,
 }
 
 impl Counter {
 
-    pub fn new(name: CounterName, init: u64) -> Counter {
+    pub fn new(name: CounterName, init: i64) -> Counter {
         Counter {
             name: name,
             value: init,
@@ -30,61 +35,33 @@ impl Counter {
         &self.name
     }
 
-    pub fn value(&self) -> u64 {
+    pub fn value(&self) -> i64 {
         self.value
     }
 
-}
+    pub fn persist(self, store: &Store) -> Result<(), StoreError> {
+        use std::ops::DerefMut;
 
-impl<'a> From<&'a Entry> for Counter {
+        let mut lockentry = store.create(ModuleEntryPath::new(self.name.clone()).into_storeid());
+        if lockentry.is_err() {
+            return Err(lockentry.err().unwrap());
+        }
+        let mut lockentry = lockentry.unwrap();
 
-    fn from(e: &'a Entry) -> Counter {
-        let hdr = e.get_header();
+        let mut entry  = lockentry.deref_mut();
+        let mut header = entry.get_header_mut();
+        let setres = header.set("counter.name", Value::String(self.name));
+        if setres.is_err() {
+            return Err(setres.err().unwrap());
+        }
 
-        let name = String::from("Unimplemented");
-        let value = 0;
+        let setres = header.set("counter.value", Value::Integer(self.value));
+        if setres.is_err() {
+            return Err(setres.err().unwrap());
+        }
 
-        Counter {
-            name: name,
-            value: value,
-        };
-
-        unimplemented!()
+        Ok(())
     }
 
 }
 
-impl Into<Entry> for Counter {
-
-    fn into(self) -> Entry {
-        let path    = ModuleEntryPath::new(self.name);
-        let mut e   = Entry::new(path.into_storeid());
-        let mut hdr = e.get_header_mut();
-
-        unimplemented!()
-    }
-}
-
-trait IntoCounterName {
-    fn into_countername(self) -> CounterName;
-}
-
-impl IntoCounterName for StoreId {
-
-    fn into_countername(self) -> CounterName {
-        unimplemented!()
-    }
-
-}
-
-trait FromCounterName<T> {
-    fn from_countername(c: CounterName) -> T;
-}
-
-impl FromCounterName<StoreId> for CounterName {
-
-    fn into_countername(self) -> StoreId {
-        unimplemented!()
-    }
-
-}
