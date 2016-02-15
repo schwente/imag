@@ -10,6 +10,9 @@ use libimagstore::store::Entry;
 use libimagstore::storeid::IntoStoreId;
 
 use module_path::ModuleEntryPath;
+use result::Result;
+use error::CounterError as CE;
+use error::CounterErrorKind as CEK;
 
 pub type CounterName = String;
 
@@ -39,12 +42,12 @@ impl Counter {
         self.value
     }
 
-    pub fn persist(self, store: &Store) -> Result<(), StoreError> {
+    pub fn persist(self, store: &Store) -> Result<()> {
         use std::ops::DerefMut;
 
         let mut lockentry = store.create(ModuleEntryPath::new(self.name.clone()).into_storeid());
         if lockentry.is_err() {
-            return Err(lockentry.err().unwrap());
+            return Err(CE::new(CEK::StoreWriteError, Some(Box::new(lockentry.err().unwrap()))));
         }
         let mut lockentry = lockentry.unwrap();
 
@@ -52,12 +55,12 @@ impl Counter {
         let mut header = entry.get_header_mut();
         let setres = header.set("counter.name", Value::String(self.name));
         if setres.is_err() {
-            return Err(setres.err().unwrap());
+            return Err(CE::new(CEK::StoreWriteError, Some(Box::new(setres.err().unwrap()))));
         }
 
         let setres = header.set("counter.value", Value::Integer(self.value));
         if setres.is_err() {
-            return Err(setres.err().unwrap());
+            return Err(CE::new(CEK::StoreWriteError, Some(Box::new(setres.err().unwrap()))));
         }
 
         Ok(())
