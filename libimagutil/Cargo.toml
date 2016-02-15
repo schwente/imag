@@ -7,3 +7,6 @@ authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 log = "0.3.5"
 regex = "0.1.47"
 
+[dependencies.libimagrt]
+path = "../libimagrt"
+
