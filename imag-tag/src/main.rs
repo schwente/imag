@@ -1,8 +1,8 @@
 extern crate clap;
-extern crate log;
+#[macro_use] extern crate log;
 extern crate semver;
 extern crate toml;
-extern crate version;
+#[macro_use] extern crate version;
 
 extern crate libimagstore;
 extern crate libimagrt;
