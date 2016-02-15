@@ -6,4 +6,5 @@ extern crate toml;
 module_entry_path_mod!("counter", "0.1.0");
 
 pub mod counter;
+pub mod error;
 
