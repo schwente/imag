@@ -7,29 +7,47 @@ use result::Result;
 
 use toml::Value;
 
-pub fn get_links(header: &EntryHeader) -> Result<Links> {
-    process_rw_result(header.read("imag.links"))
+pub trait InternalLinker {
+
+    fn get_internal_links(&self) -> Result<Links>;
+
+    fn set_internal_links(&mut self, links: Links) -> Result<Links>;
+
+    fn add_internal_link(&mut self, link: Link) -> Result<()>;
+
+    fn remove_internal_link(&mut self, link: Link) -> Result<()>;
+
 }
 
-/// Set the links in a header and return the old links, if any.
-pub fn set_links(header: &mut EntryHeader, links: Links) -> Result<Links> {
-    let links : Vec<Link> = links.into();
-    let links : Vec<Value> = links.into_iter().map(|link| Value::String(link.into())).collect();
-    process_rw_result(header.set("imag.links", Value::Array(links)))
-}
+impl InternalLinker for EntryHeader {
 
-pub fn add_link(header: &mut EntryHeader, link: Link) -> Result<()> {
-    get_links(header).and_then(|mut links| {
-        links.add(link);
-        set_links(header, links).map(|_| ())
-    })
-}
+    fn get_internal_links(self: &EntryHeader) -> Result<Links> {
+        process_rw_result(self.read("imag.links"))
+    }
 
-pub fn remove_link(header: &mut EntryHeader, link: Link) -> Result<()> {
-    get_links(header).and_then(|mut links| {
-        links.remove(link);
-        set_links(header, links).map(|_| ())
-    })
+    /// Set the links in a header and return the old links, if any.
+    fn set_internal_links(&mut self, links: Links) -> Result<Links> {
+        let links : Vec<Link> = links.into();
+        let links : Vec<Value> = links.into_iter().map(|link| Value::String(link.into())).collect();
+        process_rw_result(self.set("imag.links", Value::Array(links)))
+    }
+
+    fn add_internal_link(&mut self, link: Link) -> Result<()> {
+        self.get_internal_links()
+            .and_then(|mut links| {
+                links.add(link);
+                self.set_internal_links(links).map(|_| ())
+            })
+    }
+
+    fn remove_internal_link(&mut self, link: Link) -> Result<()> {
+        self.get_internal_links()
+            .and_then(|mut links| {
+                links.remove(link);
+                self.set_internal_links(links).map(|_| ())
+            })
+    }
+
 }
 
 fn process_rw_result(links: StoreResult<Option<Value>>) -> Result<Links> {
