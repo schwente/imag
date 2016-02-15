@@ -66,5 +66,47 @@ impl Counter {
         Ok(())
     }
 
+    pub fn load(name: CounterName, store: &Store) -> Result<Counter> {
+        use std::ops::Deref;
+
+        let lockentry = store.retrieve(ModuleEntryPath::new(name).into_storeid());
+        if lockentry.is_err() {
+            return Err(CE::new(CEK::StoreReadError, Some(Box::new(lockentry.err().unwrap()))));
+        }
+        let lockentry = lockentry.unwrap();
+
+        let value = {
+            let v = lockentry.deref().get_header().read("counter.value");
+            if v.is_err() {
+                return Err(CE::new(CEK::StoreReadError, Some(Box::new(v.err().unwrap()))));
+            }
+            let v = v.unwrap();
+
+            match v {
+                Some(Value::Integer(i)) => i,
+                None => return Err(CE::new(CEK::HeaderFieldMissingError, None)),
+                _    => return Err(CE::new(CEK::HeaderTypeError, None)),
+            }
+        };
+
+        let name = {
+            let n = lockentry.deref().get_header().read("counter.name");
+            if n.is_err() {
+                return Err(CE::new(CEK::StoreReadError, Some(Box::new(n.err().unwrap()))));
+            }
+            let n = n.unwrap();
+
+            match n {
+                Some(Value::String(s)) => String::from(s),
+                None => return Err(CE::new(CEK::HeaderFieldMissingError, None)),
+                _    => return Err(CE::new(CEK::HeaderTypeError, None)),
+            }
+        };
+
+        Ok(Counter {
+            name: name,
+            value: value,
+        })
+    }
 }
 
