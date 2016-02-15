@@ -9,7 +9,11 @@ use toml::Value;
 use toml::Table;
 
 pub trait ExternalLinker {
+
+    /// get the external link from the implementor object
     fn get_external_link(&self) -> Result<Option<Link>>;
+
+    /// set the external link for the implementor object
     fn set_external_link(&mut self, l: Link) -> Result<Option<Link>>;
 }
 
