@@ -108,5 +108,10 @@ impl Counter {
             value: value,
         })
     }
+
+    pub fn delete(name: CounterName, store: &Store) -> Result<()> {
+        store.delete(ModuleEntryPath::new(name).into_storeid())
+            .map_err(|e| CE::new(CEK::StoreWriteError, Some(Box::new(e))))
+    }
 }
 
