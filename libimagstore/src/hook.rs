@@ -1,5 +1,3 @@
-use std::fmt::{Debug, Display};
-
 use storeid::StoreId;
 use store::FileLockEntry;
 
@@ -7,20 +5,8 @@ use self::error::HookError;
 
 pub type HookResult = Result<(), HookError>;
 
-pub enum DataDependencyId {
-    RuntimeDep,
-    StoreIdDep,
-    FileLockEntryDep,
-}
-
-pub trait HookDataDependencySet<T> {
-    fn set_dependency_data(&mut self, data: T);
-}
-
 pub trait Hook : Eq + PartialEq + Debug + Display {
-    fn dependencies<H: Hook>(&self) -> Vec<Box<H>>;
-    fn get_data_dependency_ids(&self) -> Vec<DataDependencyId>;
-    fn data_is_set(&self) -> bool;
+    fn dependencies(&self) -> Vec<Box<Hook>>;
 }
 
 pub trait StoreIdHook : Hook {
