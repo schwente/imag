@@ -21,9 +21,11 @@ use error::{StoreError, StoreErrorKind};
 use storeid::{StoreId, StoreIdIterator};
 use lazyfile::LazyFile;
 
+use hook::HookResult;
 use hook::read::{PreReadHook, PostReadHook};
 use hook::create::{PreCreateHook, PostCreateHook};
 use hook::retrieve::{PreRetrieveHook, PostRetrieveHook};
+use hook::update::{PreUpdateHook, PostUpdateHook};
 use hook::delete::{PreDeleteHook, PostDeleteHook};
 
 /// The Result Type returned by any interaction with the store that could fail
@@ -164,6 +166,10 @@ impl Store {
 
     /// Creates the Entry at the given location (inside the entry)
     pub fn create<'a>(&'a self, id: StoreId) -> Result<FileLockEntry<'a>> {
+        if let Err(e) = self.execute_pre_create_hooks(&id) {
+            return Err(e);
+        }
+
         if !self.id_in_store(&id) {
             debug!("'{:?}' seems not to be in '{:?}'", id, self.location);
             return Err(StoreError::new(StoreErrorKind::StorePathOutsideStore, None));
@@ -182,12 +188,17 @@ impl Store {
             se.status = StoreEntryStatus::Borrowed;
             se
         });
-        Ok(FileLockEntry::new(self, Entry::new(id.clone()), id))
+
+        self.execute_post_create_hooks(FileLockEntry::new(self, Entry::new(id.clone()), id))
     }
 
     /// Borrow a given Entry. When the `FileLockEntry` is either `update`d or
     /// dropped, the new Entry is written to disk
     pub fn retrieve<'a>(&'a self, id: StoreId) -> Result<FileLockEntry<'a>> {
+        if let Err(e) = self.execute_pre_retrieve_hooks(&id) {
+            return Err(e);
+        }
+
         if !self.id_in_store(&id) {
             debug!("'{:?}' seems not to be in '{:?}'", id, self.location);
             return Err(StoreError::new(StoreErrorKind::StorePathOutsideStore, None));
@@ -202,7 +213,7 @@ impl Store {
                 se.status = StoreEntryStatus::Borrowed;
                 entry
             })
-            .map(|e| FileLockEntry::new(self, e, id))
+            .and_then(|e| self.execute_post_retrieve_hooks(FileLockEntry::new(self, e, id)))
    }
 
     /// Iterate over all StoreIds for one module name
@@ -212,7 +223,15 @@ impl Store {
 
     /// Return the `FileLockEntry` and write to disk
     pub fn update<'a>(&'a self, entry: FileLockEntry<'a>) -> Result<()> {
-        self._update(&entry)
+        if let Err(e) = self.execute_pre_update_hooks(&entry) {
+            return Err(e);
+        }
+
+        if let Err(e) = self._update(&entry) {
+            return Err(e);
+        }
+
+        self.execute_post_update_hooks(&entry)
     }
 
     /// Internal method to write to the filesystem store.
@@ -261,6 +280,10 @@ impl Store {
 
     /// Delete an entry
     pub fn delete(&self, id: StoreId) -> Result<()> {
+        if let Err(e) = self.execute_pre_delete_hooks(&id) {
+            return Err(e);
+        }
+
         if !self.id_in_store(&id) {
             debug!("'{:?}' seems not to be in '{:?}'", id, self.location);
             return Err(StoreError::new(StoreErrorKind::StorePathOutsideStore, None));
@@ -280,7 +303,11 @@ impl Store {
 
         // remove the entry first, then the file
         entries.remove(&id);
-        remove_file(&id).map_err(|e| StoreError::new(StoreErrorKind::FileError, Some(Box::new(e))))
+        if let Err(e) = remove_file(&id) {
+            return Err(StoreError::new(StoreErrorKind::FileError, Some(Box::new(e))));
+        }
+
+        self.execute_post_delete_hooks(&id)
     }
 
     fn id_in_store(&self, path: &StoreId) -> bool {
@@ -386,6 +413,52 @@ impl Store {
             .map_err(|_| StoreError::new(StoreErrorKind::HookRegisterError, None))
             // TODO: cause: Some(Box::new(e))
             .map(|mut guard| guard.deref_mut().push(h))
+    }
+
+    pub fn execute_pre_read_hooks(&self, id: &StoreId) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn execute_post_read_hooks<'a>(&'a self, fle: FileLockEntry<'a>)
+        -> Result<FileLockEntry<'a>>
+    {
+        unimplemented!()
+    }
+
+    pub fn execute_pre_create_hooks(&self, id: &StoreId) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn execute_post_create_hooks<'a>(&'a self, fle: FileLockEntry<'a>)
+        -> Result<FileLockEntry<'a>>
+    {
+        unimplemented!()
+    }
+
+    pub fn execute_pre_retrieve_hooks(&self, id: &StoreId) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn execute_post_retrieve_hooks<'a>(&'a self, fle: FileLockEntry<'a>)
+        -> Result<FileLockEntry<'a>>
+    {
+        unimplemented!()
+    }
+
+    pub fn execute_pre_update_hooks(&self, id: &FileLockEntry) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn execute_post_update_hooks(&self, id: &FileLockEntry) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn execute_pre_delete_hooks(&self, id: &StoreId) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn execute_post_delete_hooks(&self, id: &StoreId) -> Result<()> {
+        unimplemented!()
     }
 
 }
