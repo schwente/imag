@@ -29,6 +29,8 @@ pub enum StoreErrorKind {
     HeaderKeyNotFound,
     HeaderTypeFailure,
     HookRegisterError,
+    PreHookExecuteError,
+    PostHookExecuteError,
         // maybe more
 }
 
@@ -54,6 +56,8 @@ fn store_error_type_as_str(e: &StoreErrorKind) -> &'static str {
         &StoreErrorKind::HeaderKeyNotFound     => "Header Key not found",
         &StoreErrorKind::HeaderTypeFailure     => "Header type is wrong",
         &StoreErrorKind::HookRegisterError     => "Hook register error",
+        &StoreErrorKind::PreHookExecuteError   => "Pre-Hook execution error",
+        &StoreErrorKind::PostHookExecuteError  => "Post-Hook execution error",
     }
 }
 
