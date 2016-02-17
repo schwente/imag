@@ -127,6 +127,47 @@ pub mod error {
         }
     }
 
+    pub trait IntoHookError {
+        fn into_hookerror(self) -> HookError;
+        fn into_hookerror_with_cause(self, cause: Box<Error>) -> HookError;
+    }
+
+    impl IntoHookError for HookErrorKind {
+
+        fn into_hookerror(self) -> HookError {
+            HookError::new(self, None)
+        }
+
+        fn into_hookerror_with_cause(self, cause: Box<Error>) -> HookError {
+            HookError::new(self, Some(cause))
+        }
+
+    }
+
+    impl IntoHookError for PreHookErrorKind {
+
+        fn into_hookerror(self) -> HookError {
+            HookError::new(self.into(), None)
+        }
+
+        fn into_hookerror_with_cause(self, cause: Box<Error>) -> HookError {
+            HookError::new(self.into(), Some(cause))
+        }
+
+    }
+
+    impl IntoHookError for PostHookErrorKind {
+
+        fn into_hookerror(self) -> HookError {
+            HookError::new(self.into(), None)
+        }
+
+        fn into_hookerror_with_cause(self, cause: Box<Error>) -> HookError {
+            HookError::new(self.into(), Some(cause))
+        }
+
+    }
+
     fn hook_error_type_as_str(e: &HookErrorKind) -> &'static str {
         match e {
             _ => "",
