@@ -250,6 +250,16 @@ impl Store {
         remove_file(&id).map_err(|e| StoreError::new(StoreErrorKind::FileError, Some(Box::new(e))))
     }
 
+    /// Move an entry
+    pub fn move_entry(&self, entry: Entry, new_id: StoreId) -> Result<()> {
+        unimplemented!()
+    }
+
+    /// Move an entry without loading
+    pub fn  move_by_id(&self, old_id: StoreId, new_id: &StoreId) -> Result<()> {
+        unimplemented!()
+    }
+
     fn id_in_store(&self, path: &StoreId) -> bool {
         path.canonicalize()
             .map(|can| {
